@@ -106,6 +106,11 @@ class Packet(object):
     def value(self):
         return anyjson.deserialize(self.buf.getvalue())
 
+    def reset(self):
+        self.buf = BytesIO()
+        self.length = None
+        self.received = 0
+
 
 class FramedRelay(Relay):
     """Relay that properly decode each received packet."""
@@ -128,4 +133,4 @@ class FramedRelay(Relay):
         if packet.ready:
             reply = self.callback(packet.value)
             client.write(self._encode(reply))
-            self._packets[client] = Packet()
+            packet.reset()
