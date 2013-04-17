@@ -1,2 +1,5 @@
-include setup.py README.rst MANIFEST.in
+include setup.py tox.ini README.rst MANIFEST.in LICENSE
+recursive-include tests *.py
+recursive-include requirements *.txt
 global-exclude *~
+

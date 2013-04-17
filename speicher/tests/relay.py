@@ -128,3 +128,4 @@ class FramedRelay(Relay):
         if packet.ready:
             reply = self.callback(packet.value)
             client.write(self._encode(reply))
+            self._packets[client] = Packet()
