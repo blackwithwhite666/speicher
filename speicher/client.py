@@ -27,7 +27,7 @@ class Speicher(object):
        'bar'
        >>> c.delete('foo')
        True
-       >>> c.reset('foo')
+       >>> c.reset()
        >>> c.delete('foo')
        False
        >>> c.get('foo')

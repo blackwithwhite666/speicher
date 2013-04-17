@@ -51,14 +51,6 @@ class ConnectionTest(TestCase):
         with self.assertRaises(ConnectionError):
             c.read()
 
-    def test_write_error(self):
-        c = self.create_connection()
-        c.connect()
-        self.relay.stop()
-        with self.assertRaises(ConnectionError):
-            c.send(dict(test=1))
-            c.send(dict(test=1))
-
     def test_big_packet(self):
         big_fat_string = '00' * MAX_READ_LENGTH
         c = self.create_connection()
