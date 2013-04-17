@@ -8,15 +8,13 @@ from io import BytesIO
 
 import anyjson
 
+from .exceptions import ConnectionError
+
 #: Format to encode message length.
 LENGTH_FORMAT = b'!i'
 
 #: How many bytes should we receive from socket?
 MAX_READ_LENGTH = 1000000
-
-
-class ConnectionError(Exception):
-    """Raised on socket error."""
 
 
 class Connection(object):
@@ -55,12 +53,8 @@ class Connection(object):
         try:
             sock = self._create_connection()
         except IOError as exc:
-            if len(exc.args) == 1:
-                msg = b"Error connecting to {0}:{1}. {2}.".format(
-                    self.host, self.port, exc.args[0])
-            else:
-                msg = b"Error {0} connecting {1}:{2}. {3}.".format(
-                    exc.args[0], self.host, self.port, exc.args[1])
+            msg = b"Error connecting {0}:{1}. {2}.".format(
+                self.host, self.port, exc.args)
             raise ConnectionError(msg)
         else:
             self._sock = sock
@@ -71,7 +65,7 @@ class Connection(object):
             return
         try:
             self._sock.close()
-        except IOError:
+        except IOError:  # pragma: nocover
             pass
         finally:
             self._sock = None
@@ -97,14 +91,10 @@ class Connection(object):
             self._sock.sendall(self._create_packet(data))
         except IOError as exc:
             self.disconnect()
-            if len(exc.args) == 1:
-                errno, errmsg = 'UNKNOWN', exc.args[0]
-            else:
-                errno, errmsg = exc.args
             raise ConnectionError(
-                b"Error {0} while writing to socket. {1}."
-                .format(errno, errmsg))
-        except Exception:
+                b"Error happened while writing to socket. {0}."
+                .format(exc.args))
+        except Exception:  # pragma: nocover
             self.disconnect()
             raise
 
@@ -134,8 +124,9 @@ class Connection(object):
             # read from socket by small chunk
             while bytes_left > 0:
                 read_len = min(bytes_left, MAX_READ_LENGTH)
-                buf.write(self._recv_msg(read_len))
-                bytes_left -= read_len
+                chunk = self._recv_msg(read_len)
+                buf.write(chunk)
+                bytes_left -= len(chunk)
             return buf.getvalue()
         finally:
             buf.close()
@@ -152,7 +143,7 @@ class Connection(object):
             raise ConnectionError(
                 b"Error while reading from socket: {0}"
                 .format(exc.args))
-        except Exception:
+        except Exception:  # pragma: nocover
             self.disconnect()
             raise
         else:

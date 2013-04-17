@@ -12,4 +12,5 @@ __docformat__ = 'restructuredtext'
 
 # -eof meta-
 
+from . import exceptions
 from .client import Speicher

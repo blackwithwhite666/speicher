@@ -2,12 +2,19 @@
 # coding: utf-8
 import os
 import re
+import sys
+
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
 
 
 install_requires = [
     'six>=1.3.0',
     'anyjson>=0.3.0',
+]
+
+tests_require=[
+    'tox',
 ]
 
 
@@ -53,6 +60,19 @@ with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
 
 
+class Tox(TestCommand):
+
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        import tox
+        errno = tox.cmdline(self.test_args)
+        sys.exit(errno)
+
+
 setup(
     name='speicher',
     version=meta['VERSION'],
@@ -64,6 +84,8 @@ setup(
     packages=find_packages(),
     zip_safe=False,
     install_requires=install_requires,
+    tests_require=['tox'],
+    cmdclass={'test': Tox},
     license='MIT',
     include_package_data=True,
     classifiers=[
